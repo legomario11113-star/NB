@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Для тебя ♥</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="cursor-effect.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:   #4f8ef7;
+      --purple: #9b6bf5;
+      --pink:   #ea6fb5;
+      --yellow: #f7c948;
+      --deep:   #7a4fd6;
+      --light:  #f3f0fc;
+      --card:   #ffffff;
+      --text:   #2c2650;
+      --muted:  #8078a8;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #eaf1ff 0%, #f1ecfd 35%, #fbecf7 70%, #fff8e6 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* floating hearts bg */
+    .hearts-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .heart-particle {
+      position: absolute;
+      opacity: 0.15;
+      animation: drift linear infinite;
+      user-select: none;
+    }
+    @keyframes drift {
+      0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+      10%  { opacity: 0.25; }
+      90%  { opacity: 0.25; }
+      100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* card */
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--card);
+      border-radius: 24px;
+      padding: 48px 44px;
+      text-align: center;
+      max-width: 480px;
+      width: calc(100% - 40px);
+      box-shadow: 0 8px 48px rgba(122, 79, 214, 0.14);
+    }
+
+    .lock-icon {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, #e4ecff, #ede4fc);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+    }
+
+    .eyebrow {
+      font-size: 12px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--purple); margin-bottom: 12px;
+    }
+
+    .title {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px; font-weight: 700;
+      color: var(--deep); line-height: 1.2; margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-family: 'Playfair Display', serif;
+      font-style: italic; font-size: 16px;
+      color: var(--muted); margin-bottom: 36px; line-height: 1.6;
+    }
+
+    /* timer */
+    .timer {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 10px; margin-bottom: 36px;
+    }
+    .timer-block { background: linear-gradient(160deg, #eef2ff, #f4edfc); border-radius: 14px; padding: 16px 8px 12px; }
+    .timer-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px; font-weight: 700;
+      color: var(--deep); line-height: 1; display: block;
+    }
+    .timer-label {
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); margin-top: 6px; display: block;
+    }
+
+    /* clicker */
+    .clicker-section { margin-bottom: 8px; }
+
+    .clicker-hint {
+      font-size: 13px; color: var(--muted); margin-bottom: 16px;
+    }
+
+    .heart-btn-wrap {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    .heart-btn {
+      background: none; border: none; cursor: pointer;
+      padding: 0; display: block;
+      transition: transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .heart-btn:active { transform: scale(0.88); }
+
+    .heart-btn svg {
+      width: 72px; height: 72px;
+      filter: drop-shadow(0 4px 12px rgba(122,79,214,0.35));
+      transition: filter 0.15s;
+    }
+    .heart-btn:active svg {
+      filter: drop-shadow(0 2px 6px rgba(122,79,214,0.5));
+    }
+
+    .click-count {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px; color: var(--muted);
+    }
+    .click-count span { color: var(--deep); font-weight: 700; font-size: 18px; }
+
+    /* flying hearts */
+    .fly {
+      position: fixed;
+      pointer-events: none;
+      font-size: 20px;
+      animation: flyUp 0.9s ease-out forwards;
+      z-index: 999;
+      user-select: none;
+    }
+    @keyframes flyUp {
+      0%   { opacity: 1; transform: translate(0, 0) scale(1) rotate(var(--r)); }
+      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.4) rotate(var(--r2)); }
+    }
+
+    /* unlock state */
+    .unlock { display: none; flex-direction: column; align-items: center; gap: 20px; }
+
+    .unlock-icon {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, #e4ecff, #ede4fc);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      animation: pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes pop {
+      0%   { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .unlock-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 700; color: var(--deep);
+    }
+
+    .total-clicks {
+      background: linear-gradient(160deg, #eef2ff, #f4edfc);
+      border-radius: 16px;
+      padding: 20px 32px;
+      text-align: center;
+    }
+    .total-clicks-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 56px; font-weight: 700;
+      color: var(--deep); line-height: 1; display: block;
+    }
+    .total-clicks-label {
+      font-size: 13px; color: var(--muted);
+      margin-top: 6px; display: block;
+    }
+
+    .unlock-btn {
+      background: linear-gradient(120deg, var(--blue), var(--purple), var(--pink));
+      color: #fff;
+      border: none; border-radius: 50px;
+      padding: 16px 40px; font-size: 16px; font-weight: 500;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: filter 0.2s, transform 0.1s;
+    }
+    .unlock-btn:hover  { filter: brightness(1.08); }
+    .unlock-btn:active { transform: scale(0.97); }
+
+    .replay-btn {
+      background: none;
+      color: var(--deep);
+      border: 1.5px solid #ddd3f5;
+      border-radius: 50px;
+      padding: 13px 32px; font-size: 14px; font-weight: 500;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: background 0.2s, transform 0.1s, border-color 0.2s;
+    }
+    .replay-btn:hover  { background: var(--light); border-color: var(--purple); }
+    .replay-btn:active { transform: scale(0.97); }
+
+    @media (max-width: 480px) {
+      .card { padding: 36px 20px; }
+      .timer-num { font-size: 28px; }
+      .title { font-size: 26px; }
+    }
+
+    /* login view */
+    .login { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+
+    .login-input {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      padding: 14px 18px;
+      border: 1.5px solid #ddd3f5;
+      border-radius: 14px;
+      background: var(--light);
+      color: var(--text);
+      outline: none;
+      margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .login-input:focus { border-color: var(--purple); }
+
+    .login-error {
+      color: var(--pink);
+      font-size: 13px;
+      margin-bottom: 14px;
+      min-height: 16px;
+    }
+
+    .login-btn {
+      width: 100%;
+      background: linear-gradient(120deg, var(--blue), var(--purple), var(--pink));
+      color: #fff;
+      border: none; border-radius: 50px;
+      padding: 15px 40px; font-size: 15px; font-weight: 500;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: filter 0.2s, transform 0.1s;
+    }
+    .login-btn:hover  { filter: brightness(1.08); }
+    .login-btn:active { transform: scale(0.97); }
+    .login-btn:disabled { opacity: 0.6; cursor: default; }
+
+    /* error view */
+    .error-view { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .error-icon {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, #e4ecff, #ede4fc);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .error-text {
+      font-size: 14px; color: var(--muted);
+      line-height: 1.6; margin-bottom: 28px;
+    }
+
+    /* offline sync badge */
+    .sync-badge {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      background: var(--light);
+      border-radius: 20px;
+      padding: 8px 14px;
+      margin-top: 14px;
+    }
+    .sync-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--purple);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    /* loading view */
+    .loading-view {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      padding: 40px 0;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid #ede4fc;
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 13px; color: var(--muted); }
+
+    /* ── конфетти ── */
+    .confetti-piece {
+      position: fixed;
+      top: 0; left: 0;
+      pointer-events: none;
+      z-index: 1000;
+      animation: confettiFly ease-out forwards;
+    }
+    @keyframes confettiFly {
+      0%   { transform: translate(var(--sx), var(--sy)) rotate(0deg); opacity: 1; }
+      100% { transform: translate(var(--ex), var(--ey)) rotate(var(--rot)); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hearts-bg" id="heartsBg"></div>
+
+<div class="card">
+
+  <!-- LOGIN -->
+  <div class="login" id="loginView">
+    <div class="lock-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7a4fd6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    <p class="eyebrow">Прежде чем войти</p>
+    <h1 class="title" style="margin-bottom: 24px;">Как тебя зовут?</h1>
+
+    <input type="text" class="login-input" id="loginFirstName" placeholder="Имя" autocomplete="off" />
+    <input type="text" class="login-input" id="loginLastName" placeholder="Фамилия" autocomplete="off" />
+    <p class="login-error" id="loginError"></p>
+    <button class="login-btn" id="loginBtn">Войти</button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-view" id="loadingView">
+    <div class="spinner"></div>
+    <p class="loading-text">Секунду...</p>
+  </div>
+
+  <!-- ERROR -->
+  <div class="error-view" id="errorView" style="display:none;">
+    <div class="error-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7a4fd6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <p class="eyebrow">Не получилось загрузиться</p>
+    <h1 class="title" style="margin-bottom: 16px;">Сервер сейчас недоступен</h1>
+    <p class="error-text">Попробуй ещё раз чуть позже — твои клики никуда не делись, они в базе.</p>
+    <button class="login-btn" id="retryBtn">Повторить</button>
+  </div>
+
+  <!-- LOCKED -->
+  <div id="lockedView" style="display:none;">
+    <div class="lock-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7a4fd6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+
+    <p class="eyebrow">Только для тебя</p>
+    <h1 class="title">Здесь кое-что есть</h1>
+    <p class="subtitle">Но откроется это только<br>в твой особенный день</p>
+
+    <div class="timer">
+      <div class="timer-block"><span class="timer-num" id="tDays">00</span><span class="timer-label">дней</span></div>
+      <div class="timer-block"><span class="timer-num" id="tHours">00</span><span class="timer-label">часов</span></div>
+      <div class="timer-block"><span class="timer-num" id="tMins">00</span><span class="timer-label">минут</span></div>
+      <div class="timer-block"><span class="timer-num" id="tSecs">00</span><span class="timer-label">секунд</span></div>
+    </div>
+
+    <div class="clicker-section">
+      <p class="clicker-hint">Нажимай пока ждёшь ♥</p>
+      <div class="heart-btn-wrap">
+        <button class="heart-btn" id="heartBtn" aria-label="Нажми на сердечко">
+          <svg viewBox="0 0 100 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#4f8ef7"/>
+                <stop offset="50%" stop-color="#9b6bf5"/>
+                <stop offset="100%" stop-color="#ea6fb5"/>
+              </linearGradient>
+            </defs>
+            <path d="M50 85 C50 85 5 55 5 28 C5 14 16 5 28 5 C36 5 44 9 50 16 C56 9 64 5 72 5 C84 5 95 14 95 28 C95 55 50 85 50 85Z" fill="url(#heartGrad)"/>
+          </svg>
+        </button>
+      </div>
+      <p class="click-count">ты нажала <span id="clickNum">0</span> раз</p>
+      <p class="sync-badge" id="syncBadge"><span class="sync-dot"></span> клики сохраняются локально, досинхронизирую позже</p>
+    </div>
+  </div>
+
+  <!-- UNLOCKED -->
+  <div class="unlock" id="unlockedView">
+    <div class="unlock-icon">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#7a4fd6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+      </svg>
+    </div>
+    <p class="eyebrow">С Днём Рождения, Любимая</p>
+    <p class="unlock-title">Спасибо что ты есть  ♥</p>
+
+    <div class="total-clicks">
+      <span class="total-clicks-num" id="totalClicksNum">0</span>
+      <span class="total-clicks-label">раз я тебя поцелую в этом году<br>P.S а может и больше</span>
+    </div>
+
+    <button class="unlock-btn" onclick="window.location.href='index.html'">
+      Открыть подарок →
+    </button>
+    <button class="replay-btn" id="replayEffectBtn">
+      Просмотреть эффект ✦
+    </button>
+  </div>
+
+</div>
+
+<script>
+  /* floating bg hearts */
+  (function() {
+    const bg = document.getElementById('heartsBg');
+    const chars = ['♥','♡','♥','♡','✦'];
+    const bgColors = ['#4f8ef7','#9b6bf5','#ea6fb5','#f7c948'];
+    for (let i = 0; i < 60; i++) {
+      const el = document.createElement('span');
+      el.className = 'heart-particle';
+      el.textContent = chars[i % chars.length];
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.fontSize = (14 + Math.random() * 18) + 'px';
+      el.style.color = bgColors[i % bgColors.length];
+      el.style.animationDuration = (12 + Math.random() * 18) + 's';
+      el.style.animationDelay = (-Math.random() * 20) + 's';
+      bg.appendChild(el);
+    }
+  })();
+
+  /* ====== сервер ====== */
+  const API_URL = 'http://localhost:3000'; // потом заменишь на адрес задеплоенного сервера
+
+  const USER_ID_KEY = 'user_id';
+  const PENDING_KEY = 'pending_clicks';
+  let clicks = 0;
+  let userId = localStorage.getItem(USER_ID_KEY);
+
+  const loginView    = document.getElementById('loginView');
+  const lockedView   = document.getElementById('lockedView');
+  const errorView    = document.getElementById('errorView');
+  const loadingView  = document.getElementById('loadingView');
+  const loginFirstName = document.getElementById('loginFirstName');
+  const loginLastName  = document.getElementById('loginLastName');
+  const loginError   = document.getElementById('loginError');
+  const loginBtn     = document.getElementById('loginBtn');
+  const retryBtn     = document.getElementById('retryBtn');
+  const syncBadge    = document.getElementById('syncBadge');
+
+  function showLocked() {
+    loginView.style.display = 'none';
+    errorView.style.display = 'none';
+    loadingView.style.display = 'none';
+    lockedView.style.display = 'block';
+    document.getElementById('clickNum').textContent = clicks;
+    updateSyncBadge();
+    tick(); // пересчитать таймер сразу после входа
+  }
+
+  function showError() {
+    loginView.style.display = 'none';
+    lockedView.style.display = 'none';
+    loadingView.style.display = 'none';
+    errorView.style.display = 'flex';
+  }
+
+  function showLoading() {
+    loginView.style.display = 'none';
+    lockedView.style.display = 'none';
+    errorView.style.display = 'none';
+    loadingView.style.display = 'flex';
+  }
+
+  retryBtn.addEventListener('click', function() {
+    fetchCurrentClicks();
+  });
+
+  /* ====== очередь офлайн-кликов ====== */
+  function getPending() { return parseInt(localStorage.getItem(PENDING_KEY) || '0', 10); }
+  function setPending(n) { localStorage.setItem(PENDING_KEY, n); }
+
+  function updateSyncBadge() {
+    syncBadge.style.display = getPending() > 0 ? 'inline-flex' : 'none';
+  }
+
+  async function sendOneClick() {
+    const res = await fetch(`${API_URL}/api/click/${userId}`, { method: 'POST' });
+    if (!res.ok) throw new Error('bad status');
+    const data = await res.json();
+    return data.clicks;
+  }
+
+  async function flushPending() {
+    if (!userId) return;
+    if (getPending() <= 0) { updateSyncBadge(); return; }
+    try {
+      let serverClicks;
+      while (getPending() > 0) {
+        serverClicks = await sendOneClick();
+        setPending(getPending() - 1);
+      }
+      clicks = serverClicks;
+      document.getElementById('clickNum').textContent = clicks;
+    } catch (err) {
+      // всё ещё нет связи — оставляем в очереди, попробуем позже
+    }
+    updateSyncBadge();
+  }
+
+  async function login(firstName, lastName) {
+    loginError.textContent = '';
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Входим...';
+    try {
+      const res = await fetch(`${API_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ first_name: firstName, last_name: lastName })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        loginError.textContent = data.error === 'Пользователь не найден'
+          ? 'Хм, не нашла тебя. Проверь, как написано имя и фамилия.'
+          : (data.error || 'Что-то пошло не так');
+        return;
+      }
+      userId = data.id;
+      clicks = data.clicks;
+      localStorage.setItem(USER_ID_KEY, userId);
+      showLocked();
+    } catch (err) {
+      loginError.textContent = 'Не получилось связаться с сервером. Попробуй ещё раз.';
+      console.error(err);
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'Войти';
+    }
+  }
+
+  loginBtn.addEventListener('click', function() {
+    const fn = loginFirstName.value.trim();
+    const ln = loginLastName.value.trim();
+    if (!fn || !ln) {
+      loginError.textContent = 'Заполни оба поля';
+      return;
+    }
+    login(fn, ln);
+  });
+
+  [loginFirstName, loginLastName].forEach(input => {
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') loginBtn.click();
+    });
+  });
+
+  async function fetchCurrentClicks() {
+    showLoading();
+    try {
+      const res = await fetch(`${API_URL}/api/clicks/${userId}`);
+      if (!res.ok) throw new Error('bad status');
+      const data = await res.json();
+      clicks = data.clicks;
+      showLocked();
+      flushPending(); // если за это время накопились офлайн-клики — досинхронизируем
+    } catch (err) {
+      console.error(err);
+      showError();
+    }
+  }
+
+  /* если id уже сохранён — сразу прячем форму логина и показываем загрузку,
+     иначе остаётся видна форма логина (она в разметке показана по умолчанию) */
+  if (userId) {
+    showLoading();
+    fetchCurrentClicks();
+  }
+
+  /* clicker */
+  const heartBtn = document.getElementById('heartBtn');
+  const colors = ['#4f8ef7','#9b6bf5','#ea6fb5','#f7c948','#6fb1f7','#c48ff2'];
+  const emojis = ['♥','♡','♥','✦','♥','♡'];
+
+  heartBtn.addEventListener('click', async function(e) {
+    /* клик всегда отображается сразу, независимо от связи с сервером */
+    clicks++;
+    document.getElementById('clickNum').textContent = clicks;
+
+    setPending(getPending() + 1);
+    flushPending(); // попробует отправить всё, что накопилось, включая этот клик
+
+    /* spawn flying hearts */
+    const rect = heartBtn.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top  + rect.height / 2;
+
+    const count = 6 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('span');
+      el.className = 'fly';
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.color = colors[Math.floor(Math.random() * colors.length)];
+      el.style.fontSize = (14 + Math.random() * 16) + 'px';
+
+      const angle = (Math.random() * 260) - 130;
+      const dist  = 80 + Math.random() * 100;
+      const dx    = Math.sin(angle * Math.PI / 180) * dist;
+      const dy    = -Math.abs(Math.cos(angle * Math.PI / 180)) * dist - 40;
+
+      el.style.setProperty('--dx', dx + 'px');
+      el.style.setProperty('--dy', dy + 'px');
+      el.style.setProperty('--r',  (Math.random() * 30 - 15) + 'deg');
+      el.style.setProperty('--r2', (Math.random() * 60 - 30) + 'deg');
+      el.style.left = cx + 'px';
+      el.style.top  = cy + 'px';
+
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 900);
+    }
+  });
+
+  /* countdown */
+  /* ✏️ ЗАМЕНИ дату если нужно */
+  const TARGET = new Date(2026, 9, 20, 15, 56, 0);
+
+  let hasFiredCelebration = false;
+  let isFirstTick        = true;
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  /* ── конфетти в момент открытия подарка ── */
+  const confettiColors = ['#4f8ef7','#9b6bf5','#ea6fb5','#f7c948','#6fb1f7','#c48ff2'];
+
+  function spawnConfettiBurst(x, y, dir) {
+    const count = 45;
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('span');
+      el.className = 'confetti-piece';
+      el.style.background = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+      el.style.width  = (6 + Math.random() * 6) + 'px';
+      el.style.height = (10 + Math.random() * 8) + 'px';
+      el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+
+      const spreadDeg = (Math.random() * 110) - 55; // разброс от горизонтали
+      const rad = spreadDeg * Math.PI / 180;
+      const dist = 250 + Math.random() * 400;
+
+      const ex = dir * Math.cos(rad) * dist;
+      const ey = Math.sin(rad) * dist - (80 + Math.random() * 120);
+
+      el.style.setProperty('--sx', x + 'px');
+      el.style.setProperty('--sy', y + 'px');
+      el.style.setProperty('--ex', (x + ex) + 'px');
+      el.style.setProperty('--ey', (y + ey + 400) + 'px'); // добавляем падение вниз
+      el.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+
+      const duration = 1.6 + Math.random() * 1.3;
+      el.style.animationDuration = duration + 's';
+
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), duration * 1000 + 100);
+    }
+  }
+
+  function celebrate() {
+    const y = window.innerHeight / 2;
+    spawnConfettiBurst(0, y, 1);                // с левого края экрана — летит вправо
+    spawnConfettiBurst(window.innerWidth, y, -1); // с правого края экрана — летит влево
+  }
+
+  function revealUnlocked() {
+    document.getElementById('lockedView').style.display = 'none';
+    const uv = document.getElementById('unlockedView');
+    uv.style.display = 'flex';
+    document.getElementById('totalClicksNum').textContent = clicks;
+  }
+
+  function celebrateAndReveal() {
+    celebrate();
+    setTimeout(revealUnlocked, 900); // даём конфетти долететь, потом открываем результат
+  }
+
+  /* кнопка "Просмотреть эффект" — просто заново запускает конфетти,
+     на случай если она не застала момент открытия вживую */
+  document.getElementById('replayEffectBtn').addEventListener('click', function() {
+    celebrate();
+  });
+
+  function tick() {
+    const diff = TARGET - new Date();
+
+    if (diff <= 0) {
+      if (isFirstTick) {
+        /* страница открыта уже после наступления даты — без анимации, сразу результат */
+        revealUnlocked();
+      } else if (!hasFiredCelebration) {
+        hasFiredCelebration = true;
+        celebrateAndReveal();
+      }
+      isFirstTick = false;
+      return;
+    }
+    isFirstTick = false;
+
+    document.getElementById('tDays').textContent  = pad(Math.floor(diff / 86400000));
+    document.getElementById('tHours').textContent = pad(Math.floor((diff % 86400000) / 3600000));
+    document.getElementById('tMins').textContent  = pad(Math.floor((diff % 3600000)  / 60000));
+    document.getElementById('tSecs').textContent  = pad(Math.floor((diff % 60000)    / 1000));
+  }
+
+  tick();
+  setInterval(tick, 1000);
+
+  /* фоновая попытка досинхронизировать офлайн-клики, если связь пропадала */
+  setInterval(function() {
+    if (userId && lockedView.style.display !== 'none') {
+      flushPending();
+    }
+  }, 8000);
+</script>
+<script src="cursor-effect.js"></script>
+</body>
+</html>

@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>С днём рождения ♥</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="cursor-effect.css" />
+  <style>
+    /* ── reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── base ── */
+    :root {
+      --blue:    #4f8ef7;
+      --purple:  #9b6bf5;
+      --pink:    #ea6fb5;
+      --yellow:  #f7c948;
+      --deep:    #7a4fd6;
+      --light:   #f3f0fc;
+      --card:    #ffffff;
+      --text:    #2c2650;
+      --muted:   #8078a8;
+      --radius:  16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #eaf1ff 0%, #f1ecfd 35%, #fbecf7 70%, #fff8e6 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── floating hearts bg ── */
+    .hearts-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .heart-particle {
+      position: absolute;
+      font-size: 1.4rem;
+      opacity: 0.15;
+      animation: drift linear infinite;
+      user-select: none;
+    }
+    @keyframes drift {
+      0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
+      10%  { opacity: 0.25; }
+      90%  { opacity: 0.25; }
+      100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* ── layout ── */
+    .page { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 0 20px 60px; }
+
+    /* ── hero ── */
+    .hero {
+      text-align: center;
+      padding: 80px 20px 60px;
+    }
+    .hero-eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--pink);
+      margin-bottom: 20px;
+    }
+    .hero-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(52px, 12vw, 88px);
+      font-weight: 700;
+      color: var(--deep);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .hero-date {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 22px;
+      color: var(--pink);
+      margin-bottom: 32px;
+    }
+    .hero-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      justify-content: center;
+      color: var(--pink);
+      font-size: 20px;
+      margin-bottom: 32px;
+    }
+    .hero-divider::before,
+    .hero-divider::after {
+      content: '';
+      flex: 1;
+      max-width: 80px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--pink));
+    }
+    .hero-divider::after { transform: scaleX(-1); }
+
+    /* ── photo grid ── */
+    .photos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .photo-main {
+      grid-column: 1 / -1;
+    }
+    .photo-slot {
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #ede4fc;
+      display: block;
+      position: relative;
+    }
+    .photo-main .photo-slot {
+      aspect-ratio: 16/9;
+    }
+    .photo-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    /* placeholder shown when no img src */
+    .photo-slot .placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--pink);
+  font-size: 13px;
+}
+.photo-slot img:not([src=""]) ~ .placeholder {
+  display: none;
+}
+    .photo-slot .placeholder svg { opacity: 0.4; }
+    .photo-small { aspect-ratio: 1; }
+
+    /* ── message card ── */
+    .message-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 36px 36px;
+      margin-bottom: 28px;
+      border-left: 4px solid var(--pink);
+      position: relative;
+    }
+    .message-card blockquote {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: clamp(16px, 3vw, 20px);
+      line-height: 1.75;
+      color: var(--text);
+    }
+    .message-card .signature {
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--pink);
+      font-weight: 500;
+      text-align: right;
+    }
+
+    /* ── music player ── */
+    .player {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+    .play-btn {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--purple), var(--pink));
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: filter 0.2s, transform 0.1s;
+    }
+    .play-btn:hover  { filter: brightness(1.08); }
+    .play-btn:active { transform: scale(0.95); }
+    .play-btn svg    { flex-shrink: 0; }
+    .track-meta { flex: 1; min-width: 0; }
+    .track-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .track-progress {
+      height: 4px;
+      background: #ede4fc;
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+    .track-fill {
+      height: 100%;
+      background: var(--pink);
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.5s linear;
+    }
+    .track-time {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+    .music-note { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+    /* ── counter ── */
+    .counter {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 36px 24px;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .counter-num {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(64px, 16vw, 100px);
+      font-weight: 700;
+      color: var(--deep);
+      line-height: 1;
+    }
+    .counter-unit {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--pink);
+      margin-top: 6px;
+    }
+    .counter-since {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* ── extra photos row ── */
+    .photos-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .photos-row .photo-slot { aspect-ratio: 1; }
+
+    /* ── video ── */
+    .video-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 28px;
+    }
+    .video-wrap {
+      position: relative;
+      border-radius: calc(var(--radius) - 6px);
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      background: #000;
+      cursor: pointer;
+    }
+    .video-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .video-play-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.15);
+      transition: opacity 0.2s;
+    }
+    .video-play-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .video-play-btn {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: transform 0.15s;
+    }
+    .video-wrap:hover .video-play-btn { transform: scale(1.06); }
+    .video-play-btn svg { margin-left: 4px; }
+    .video-caption {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+
+    /* ── footer ── */
+    .footer {
+      text-align: center;
+      padding-top: 12px;
+      color: var(--pink);
+      font-size: 22px;
+      letter-spacing: 0.2em;
+    }
+
+    /* ── responsive ── */
+    @media (max-width: 480px) {
+      .message-card { padding: 24px 20px; }
+      .player { padding: 16px 18px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .heart-particle { animation: none; display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- floating hearts background -->
+<div class="hearts-bg" id="heartsBg"></div>
+
+<div class="page">
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <p class="hero-eyebrow">Тест тест тест</p>
+    <!--
+      ✏️  ЗАМЕНИ "Маша" на имя своей девушки
+    -->
+    <h1 class="hero-name">Тест</h1>
+    <!--
+      ✏️  ЗАМЕНИ дату
+    -->
+    <p class="hero-date">тест тест теси</p>
+    <div class="hero-divider">♥</div>
+  </section>
+
+  <!-- ── ГЛАВНОЕ ФОТО ── -->
+  <!--
+    ✏️  Как добавить фото:
+        1. Положи файл фото рядом с index.html
+        2. Замени src="" на имя файла, например src="foto1.jpg"
+        3. Если фото нет — просто оставь src="" и появится заглушка
+  -->
+  <section class="photos">
+    <div class="photo-main">
+      <div class="photo-slot" style="aspect-ratio:16/9">
+        <img src="Screenshot_1.jpg" alt="Главное фото" onerror="this.style.display='none'" />
+        <div class="placeholder">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>Главное фото — замени src=""</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="photo-slot photo-small">
+        <img src="" alt="Фото 2" onerror="this.style.display='none'" />
+        <div class="placeholder">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>Фото 2</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="photo-slot photo-small">
+        <img src="" alt="Фото 3" onerror="this.style.display='none'" />
+        <div class="placeholder">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>Фото 3</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ПОСЛАНИЕ ── -->
+  <section class="message-card">
+    <!--
+      ✏️  ЗАМЕНИ текст внутри <blockquote> на свои слова
+    -->
+    <blockquote>
+      Повседневная практика показывает, что консультация с профессионалами из IT обеспечивает актуальность всесторонне сбалансированных нововведений? Равным образом дальнейшее развитие различных форм деятельности обеспечивает широкому кругу специалистов участие в формировании соответствующих условий активизации?
+    </blockquote>
+    <!--
+      ✏️  ЗАМЕНИ имя подписи
+    -->
+    <p class="signature">— Текст текст еткст ♥</p>
+  </section>
+
+  <!-- ── МУЗЫКА ── -->
+  <section class="player">
+    <button class="play-btn" id="playBtn" aria-label="Воспроизвести">
+      <svg id="playIcon" width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+      <svg id="pauseIcon" width="18" height="18" viewBox="0 0 24 24" fill="white" style="display:none"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+    </button>
+    <div class="track-meta">
+      <!--
+        ✏️  ЗАМЕНИ на реальное название трека/исполнителя, если хочешь
+      -->
+      <p class="track-name" id="trackName">Наша песня</p>
+      <div class="track-progress" id="progressBar">
+        <div class="track-fill" id="trackFill"></div>
+      </div>
+      <p class="track-time" id="trackTime">0:00</p>
+      <p class="music-note" id="musicNote" style="display:none">← замени src="" в теге &lt;audio&gt; на путь к MP3</p>
+    </div>
+  </section>
+
+  <!-- аудио элемент — невидимый -->
+  <audio id="audio" src="song.mp3" preload="metadata"></audio>
+
+  <!-- ── ВИДЕО ── -->
+  <!--
+    ✏️  Файл видео должен лежать рядом с index.html.
+        Сейчас подключён "gift-video.mp4" (без звука) и постер "gift-video-poster.jpg".
+  -->
+  <section class="video-card">
+    <div class="video-wrap" id="videoWrap">
+      <video id="giftVideo" src="gift-video.mp4" poster="gift-video-poster.jpg" muted loop playsinline preload="metadata"></video>
+      <div class="video-play-overlay" id="videoOverlay">
+        <div class="video-play-btn">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#7a4fd6"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+      </div>
+    </div>
+    <p class="video-caption">этот тёплый взгляд покорил моё сердце ♥</p>
+  </section>
+
+  <!-- ── ЕЩЁ ФОТО ── -->
+  <section class="photos-row">
+    <div class="photo-slot">
+      <img src="" alt="Фото 4" onerror="this.style.display='none'" />
+      <div class="placeholder">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        <span>Фото 4</span>
+      </div>
+    </div>
+    <div class="photo-slot">
+      <img src="" alt="Фото 5" onerror="this.style.display='none'" />
+      <div class="placeholder">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        <span>Фото 5</span>
+      </div>
+    </div>
+    <div class="photo-slot">
+      <img src="" alt="Фото 6" onerror="this.style.display='none'" />
+      <div class="placeholder">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        <span>Фото 6</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── СЧЁТЧИК ДНЕЙ ── -->
+  <section class="counter">
+    <div class="counter-num" id="daysCount">0</div>
+    <div class="counter-unit">дней вместе</div>
+    <!--
+      ✏️  ЗАМЕНИ дату начала отношений (формат YYYY-MM-DD)
+    -->
+    <p class="counter-since" id="counterSince">с 1 января 2024</p>
+  </section>
+
+  <!-- footer -->
+  <div class="footer">♥ ♡ ♥</div>
+
+</div><!-- .page -->
+
+<script>
+  /* ── floating hearts ── */
+  (function() {
+    const bg = document.getElementById('heartsBg');
+    const chars = ['♥','♡','♥','♡','✦'];
+    const bgColors = ['#4f8ef7','#9b6bf5','#ea6fb5','#f7c948'];
+    for (let i = 0; i < 18; i++) {
+      const el = document.createElement('span');
+      el.className = 'heart-particle';
+      el.textContent = chars[i % chars.length];
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.animationDuration = (12 + Math.random() * 18) + 's';
+      el.style.animationDelay = (-Math.random() * 20) + 's';
+      el.style.fontSize = (14 + Math.random() * 18) + 'px';
+      el.style.color = bgColors[i % bgColors.length];
+      bg.appendChild(el);
+    }
+  })();
+
+  /* ── days counter ── */
+  (function() {
+    /* ✏️  ЗАМЕНИ эту дату на дату начала ваших отношений */
+    const startDate = new Date('2024-01-01');
+    const now = new Date();
+    const diff = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+    document.getElementById('daysCount').textContent = diff > 0 ? diff : 0;
+
+    const opts = { day: 'numeric', month: 'long', year: 'numeric' };
+    const fmt = startDate.toLocaleDateString('ru-RU', opts);
+    document.getElementById('counterSince').textContent = 'с ' + fmt;
+  })();
+
+  /* ── video ── */
+  (function() {
+    const wrap    = document.getElementById('videoWrap');
+    const video   = document.getElementById('giftVideo');
+    const overlay = document.getElementById('videoOverlay');
+
+    wrap.addEventListener('click', function() {
+      if (video.paused) {
+        video.play();
+        overlay.classList.add('hidden');
+      } else {
+        video.pause();
+        overlay.classList.remove('hidden');
+      }
+    });
+
+    /* если видео вдруг остановится само (например, на старых браузерах без loop) — вернуть оверлей */
+    video.addEventListener('pause', function() {
+      overlay.classList.remove('hidden');
+    });
+    video.addEventListener('play', function() {
+      overlay.classList.add('hidden');
+    });
+  })();
+
+  /* ── music player ── */
+  (function() {
+    const audio     = document.getElementById('audio');
+    const playBtn   = document.getElementById('playBtn');
+    const playIcon  = document.getElementById('playIcon');
+    const pauseIcon = document.getElementById('pauseIcon');
+    const fill      = document.getElementById('trackFill');
+    const timeEl    = document.getElementById('trackTime');
+    const noteEl    = document.getElementById('musicNote');
+    const bar       = document.getElementById('progressBar');
+    /* ✏️  громкость по умолчанию: 0 — тихо, 1 — максимум */
+  audio.volume = 0.1;
+
+    function fmt(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return m + ':' + (sec < 10 ? '0' : '') + sec;
+    }
+
+    /* скрыть подсказку если src задан */
+    if (audio.src && audio.src !== window.location.href) noteEl.style.display = 'none';
+
+    playBtn.addEventListener('click', function() {
+      if (!audio.src || audio.src === window.location.href) {
+        noteEl.style.display = 'block';
+        return;
+      }
+      if (audio.paused) {
+        audio.play();
+        playIcon.style.display  = 'none';
+        pauseIcon.style.display = 'block';
+      } else {
+        audio.pause();
+        playIcon.style.display  = 'block';
+        pauseIcon.style.display = 'none';
+      }
+    });
+
+    audio.addEventListener('timeupdate', function() {
+      if (!audio.duration) return;
+      const pct = (audio.currentTime / audio.duration) * 100;
+      fill.style.width = pct + '%';
+      timeEl.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
+    });
+
+    audio.addEventListener('ended', function() {
+      playIcon.style.display  = 'block';
+      pauseIcon.style.display = 'none';
+      fill.style.width = '0%';
+    });
+
+    bar.addEventListener('click', function(e) {
+      if (!audio.duration) return;
+      const rect = bar.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      audio.currentTime = (x / rect.width) * audio.duration;
+    });
+  })();
+</script>
+<script src="cursor-effect.js"></script>
+</body>
+</html>

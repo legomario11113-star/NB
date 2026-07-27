@@ -1,0 +1,34 @@
+body {
+  cursor: none;
+}
+
+a, button, input, .heart-btn, .login-btn, .unlock-btn {
+  cursor: none;
+}
+
+#customCursor {
+  position: fixed;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  transition: transform 0.06s ease-out;
+}
+
+/* на тач-устройствах (телефон/планшет) курсора не существует —
+   прячем кастомное сердечко-курсор насовсем */
+@media (hover: none) {
+  #customCursor { display: none; }
+}
+
+@keyframes cursorTrailFade {
+  0%   { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -80%) scale(0.4); }
+}
+
+/* всплеск сердечек при тапе на мобилке */
+@keyframes tapBurst {
+  0%   { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
+}
